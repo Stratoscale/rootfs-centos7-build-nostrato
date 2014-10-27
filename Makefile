@@ -32,7 +32,7 @@ $(ROOTFS): build/pipdownload.frozencorrectly
 	sudo solvent bring --repositoryBasename=rootfs-centos7-basic --product=rootfs --destination=$(ROOTFS).tmp
 	echo "Installing development packages"
 	sudo chroot $(ROOTFS).tmp yum install $(FEDORA_PACKAGES_TO_INSTALL) --assumeyes
-	sudo ./chroot.sh $(ROOTFS).tmp pip install $(PYTHON_PACKAGES_TO_INSTALL) $(PYTHON_PACKAGES_TO_INSTALL_INDIRECT_DEPENDENCY)
+	sudo ./chroot.sh $(ROOTFS).tmp pip install $(PYTHON_PACKAGES_TO_INSTALL) $(PYTHON_PACKAGES_TO_INSTALL_INDIRECT_DEPENDENCY) --allow-external PIL --allow-unverified PIL
 	sudo rm -fr $(ROOTFS).tmp/tmp/* $(ROOTFS).tmp/var/tmp/*
 	sudo mv $(ROOTFS).tmp $(ROOTFS)
 
@@ -130,7 +130,6 @@ PYTHON_PACKAGES_TO_INSTALL =  anyjson==0.3.3 \
                               PyCPUID==0.4 \
                               pyiface==0.0.1 \
                               pylint==1.0.0 \
-                              pysphere==0.1.8 \
                               python-cinderclient==1.0.7 \
                               python-novaclient==2.15.0 \
                               PyYAML==3.10 \
