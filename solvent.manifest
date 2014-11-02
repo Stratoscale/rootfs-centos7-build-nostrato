@@ -1,4 +1,3 @@
 requirements:
-- hash: 164a6c1a31cc201dfc4114d45254aae8338d69f2
+- hash: 0bdc94ee45ce920dd5454f06b7bdb8cb9607c32b
   originURL: https://github.com/Stratoscale/rootfs-centos7-basic.git
-
