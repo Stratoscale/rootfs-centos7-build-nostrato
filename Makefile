@@ -15,9 +15,9 @@ build/pipdownload.frozencorrectly: Makefile
 	-rm -fr build/pipdownload
 	-mkdir -p build/pipdownload
 	for spec in $(PYTHON_PACKAGES_TO_INSTALL) $(PYTHON_PACKAGES_TO_INSTALL_INDIRECT_DEPENDENCY); do echo $$spec | grep == || ( echo "spec $$spec does not have a ==" && exit -1 ); done
-	pip2tgz build/pipdownload $(PYTHON_PACKAGES_TO_INSTALL) $(PYTHON_PACKAGES_TO_INSTALL_INDIRECT_DEPENDENCY)
+	pip2tgz build/pipdownload $(PYTHON_PACKAGES_TO_INSTALL) $(PYTHON_PACKAGES_TO_INSTALL_INDIRECT_DEPENDENCY) --allow-external PIL --allow-unverified PIL
 	rm -f build/pipspecs.regexes
-	for spec in $(PYTHON_PACKAGES_TO_INSTALL) $(PYTHON_PACKAGES_TO_INSTALL_INDIRECT_DEPENDENCY); do echo $$spec | sed 's/==/-/' >> build/pipspecs.regexes; done
+	for spec in $(PYTHON_PACKAGES_TO_INSTALL) $(PYTHON_PACKAGES_TO_INSTALL_INDIRECT_DEPENDENCY); do echo $$spec | sed 's/-/./g' | sed 's/==/-/' >> build/pipspecs.regexes; done
 	echo '\<distribute\>' >> build/pipspecs.regexes
 	echo '\<setuptools\>' >> build/pipspecs.regexes
 	rm -f build/unfrozen.violations
@@ -30,19 +30,25 @@ $(ROOTFS): build/pipdownload.frozencorrectly
 	-sudo mv $(ROOTFS)/ $(ROOTFS).tmp/
 	-mkdir $(@D)
 	sudo solvent bring --repositoryBasename=rootfs-centos7-basic --product=rootfs --destination=$(ROOTFS).tmp
+	echo "Installing efficios repo"
+	sudo cp efficios/* $(ROOTFS).tmp/tmp
+	sudo chroot $(ROOTFS).tmp sh -c 'cp /tmp/*.repo /etc/yum.repos.d/'
+	sudo chroot $(ROOTFS).tmp rpmkeys --import /tmp/repo.key
 	echo "Installing development packages"
-	sudo chroot $(ROOTFS).tmp yum install $(FEDORA_PACKAGES_TO_INSTALL) --assumeyes
+	$(foreach package,$(CENTOS_PACKAGES_TO_INSTALL), sudo chroot $(ROOTFS).tmp yum install $(package) --assumeyes && ) true
+	$(foreach rpm,$(FEDORA_PACKAGES_TO_DOWNLOAD), sudo chroot $(ROOTFS).tmp sh -c "cd /tmp; curl $(YUMCACHE)$(rpm) -o `basename $(rpm)`; yum install ./`basename $(rpm)` --assumeyes" && ) true
+	echo "Installing packages from EPEL"
+	cp epel-release-7-5.noarch.rpm $(ROOTFS).tmp/tmp
+	sudo chroot $(ROOTFS).tmp yum install /tmp/epel-release-7-5.noarch.rpm --assumeyes
+	$(foreach package,$(EPEL_PACKAGES_TO_INSTALL), sudo chroot $(ROOTFS).tmp yum install $(package) --assumeyes && ) true
 	sudo ./chroot.sh $(ROOTFS).tmp pip install $(PYTHON_PACKAGES_TO_INSTALL) $(PYTHON_PACKAGES_TO_INSTALL_INDIRECT_DEPENDENCY) --allow-external PIL --allow-unverified PIL
 	sudo rm -fr $(ROOTFS).tmp/tmp/* $(ROOTFS).tmp/var/tmp/*
 	sudo mv $(ROOTFS).tmp $(ROOTFS)
 
-FEDORA_PACKAGES_TO_INSTALL = \
+CENTOS_PACKAGES_TO_INSTALL = \
     automake \
     babeltrace \
     boost-devel \
-    busybox \
-    clang \
-    coffee-script \
     createrepo \
     cscope \
     ctags \
@@ -55,56 +61,43 @@ FEDORA_PACKAGES_TO_INSTALL = \
     git \
     httpd-tools \
     java-1.7.0-openjdk \
-    jsoncpp-devel \
     kernel-debug-devel \
     kernel-devel \
-    lcov \
     libcap \
     libvirt-python \
     lttng-tools \
     lttng-ust \
     lttng-ust-devel \
-    lttv \
     make \
-    mock \
     ncurses-devel \
-    nginx \
-    nodejs \
     nmap \
-    npm \
     openssl-devel \
-    p7zip \
-    pcapfix \
-    protobuf-compiler \
-    protobuf-devel \
-    protobuf-python \
     python-devel \
     python-dmidecode \
     python-matplotlib \
     python-netaddr \
-    python-netifaces \
-    python-prettytable \
-    python-qpid \
-    python-stevedore \
-    redis \
     rpmdevtools \
     ruby \
     ruby-devel \
     rubygem-rake \
-    s3cmd \
     spice-gtk-tools \
-    sshpass \
     tcpdump \
-    ttfautohint \
-    udisks \
     udisks2 \
-    uml_utilities \
     unzip \
     vim-enhanced \
     wget \
     xmlrpc-c-devel \
     yum-utils \
-    zeromq-devel
+
+EPEL_PACKAGES_TO_INSTALL = \
+    sshpass \
+    mock \
+
+FEDORA_PACKAGES_TO_DOWNLOAD = \
+    mirror.nonstop.co.il/fedora/linux/releases/21/Everything/x86_64/os/Packages/l/lttv-1.5-7.fc21.x86_64.rpm \
+    mirror.nonstop.co.il/fedora/linux/releases/21/Everything/x86_64/os/Packages/b/busybox-1.19.4-15.fc21.x86_64.rpm \
+
+YUMCACHE = http://localhost:1012/yumcache.strato:1012/
 
 PYTHON_PACKAGES_TO_INSTALL =  anyjson==0.3.3 \
                               bunch==1.0.1 \
@@ -121,6 +114,7 @@ PYTHON_PACKAGES_TO_INSTALL =  anyjson==0.3.3 \
                               Jinja2==2.7.1 \
                               lcov_cobertura==1.4 \
                               mock==1.0.1 \
+                              netifaces==0.10.4 \
                               networkx==1.8.1 \
                               paramiko==1.12.0 \
                               pep8==1.5.4 \
@@ -136,12 +130,13 @@ PYTHON_PACKAGES_TO_INSTALL =  anyjson==0.3.3 \
                               pyzmq==14.0.1 \
                               requests==2.1.0 \
                               requests-toolbelt==0.2.0 \
+                              qpid-python==0.26.1 \
                               selenium==2.38.1 \
                               setuptools==5.3 \
                               sh==1.09 \
                               simplejson==3.3.1 \
                               single==0.0.2 \
-                              stevedore==0.14.1 \
+                              stevedore==1.2.0 \
                               taskflow==0.1.3 \
                               tornado==3.1.1 \
                               Twisted==13.2.0 \
@@ -152,6 +147,7 @@ PYTHON_PACKAGES_TO_INSTALL =  anyjson==0.3.3 \
                               ftputil==3.1 \
 
 PYTHON_PACKAGES_TO_INSTALL_INDIRECT_DEPENDENCY =  astroid==1.0.1 \
+												  argparse==1.3.0 \
                                                   Babel==1.3 \
                                                   docopt==0.6.2 \
                                                   ecdsa==0.10 \
