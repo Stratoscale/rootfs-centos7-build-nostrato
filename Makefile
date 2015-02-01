@@ -15,7 +15,7 @@ build/pipdownload.frozencorrectly: Makefile
 	-rm -fr build/pipdownload
 	-mkdir -p build/pipdownload
 	for spec in $(PYTHON_PACKAGES_TO_INSTALL) $(PYTHON_PACKAGES_TO_INSTALL_INDIRECT_DEPENDENCY); do echo $$spec | grep == || ( echo "spec $$spec does not have a ==" && exit -1 ); done
-	pip2tgz build/pipdownload $(PYTHON_PACKAGES_TO_INSTALL) $(PYTHON_PACKAGES_TO_INSTALL_INDIRECT_DEPENDENCY) --allow-external PIL --allow-unverified PIL
+	pip2tgz build/pipdownload $(PYTHON_PACKAGES_TO_INSTALL) $(PYTHON_PACKAGES_TO_INSTALL_INDIRECT_DEPENDENCY)
 	rm -f build/pipspecs.regexes
 	for spec in $(PYTHON_PACKAGES_TO_INSTALL) $(PYTHON_PACKAGES_TO_INSTALL_INDIRECT_DEPENDENCY); do echo $$spec | sed 's/-/./g' | sed 's/==/-/' >> build/pipspecs.regexes; done
 	echo '\<distribute\>' >> build/pipspecs.regexes
