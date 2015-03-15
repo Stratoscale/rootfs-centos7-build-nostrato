@@ -130,7 +130,7 @@ PYTHON_PACKAGES_TO_INSTALL =  anyjson==0.3.3 \
                               pyzmq==14.0.1 \
                               requests==2.1.0 \
                               requests-toolbelt==0.2.0 \
-                              qpid-python==0.26.1 \
+                              qpid-python==0.26 \
                               selenium==2.38.1 \
                               setuptools==5.3 \
                               sh==1.09 \
