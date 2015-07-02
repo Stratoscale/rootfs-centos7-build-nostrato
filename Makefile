@@ -128,7 +128,7 @@ PYTHON_PACKAGES_TO_INSTALL =  anyjson==0.3.3 \
                               python-novaclient==2.15.0 \
                               PyYAML==3.10 \
                               pyzmq==14.0.1 \
-                              requests==2.1.0 \
+                              requests \
                               requests-toolbelt==0.2.0 \
                               qpid-python==0.26 \
                               selenium==2.38.1 \
