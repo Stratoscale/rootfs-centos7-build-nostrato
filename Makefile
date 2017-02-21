@@ -147,7 +147,7 @@ PYTHON_PACKAGES_TO_INSTALL =  anyjson==0.3.3 \
                               ftputil==3.1 \
 
 PYTHON_PACKAGES_TO_INSTALL_INDIRECT_DEPENDENCY =  astroid==1.0.1 \
-												  argparse==1.3.0 \
+                                                  argparse==1.3.0 \
                                                   Babel==1.3 \
                                                   docopt==0.6.2 \
                                                   ecdsa==0.10 \
